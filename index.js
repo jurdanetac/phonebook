@@ -36,8 +36,18 @@ app.get("/info", (request, response) => {
   );
 });
 
-app.get("/api/persons", (request, response) => {
-  response.json(phonebook);
+app.get("/api/persons/:id", (request, response) => {
+  // get sent id and convert it to number
+  const id = Number(request.params.id);
+  // find person with that id
+  const person = phonebook.find((p) => p.id === id);
+
+  // if person exists return the phonebook entry else send error 404 not found
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).end();
+  }
 });
 
 const PORT = 3001;
