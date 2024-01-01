@@ -4,6 +4,8 @@
   "description": "RESTful phonebook API",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +17,11 @@
   "bugs": {
     "url": "https://github.com/jurdanetac/phonebook/issues"
   },
-  "homepage": "https://github.com/jurdanetac/phonebook/blob/master/README.md"
+  "homepage": "https://github.com/jurdanetac/phonebook/blob/master/README.md",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
 }
