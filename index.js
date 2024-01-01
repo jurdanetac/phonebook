@@ -50,6 +50,19 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
+app.delete("/api/persons/:id", (request, response) => {
+  // get sent id and convert it to number
+  const id = Number(request.params.id);
+  // find person with that id
+  const person = phonebook.find((p) => p.id === id);
+
+  if (person) {
+    phonebook = phonebook.filter((p) => p.id !== id);
+  }
+
+  response.status(204).end();
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
