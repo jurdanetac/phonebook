@@ -1,0 +1,19 @@
+{
+  "name": "phonebook",
+  "version": "1.0.0",
+  "description": "RESTful phonebook API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jurdanetac/phonebook.git"
+  },
+  "author": "Juan Urdaneta",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jurdanetac/phonebook/issues"
+  },
+  "homepage": "https://github.com/jurdanetac/phonebook/blob/master/README.md"
+}
