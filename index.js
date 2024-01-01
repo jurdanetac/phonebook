@@ -28,6 +28,14 @@ app.get("/", (request, response) => {
   response.send("<h1>Phonebook</h1>");
 });
 
+app.get("/info", (request, response) => {
+  const now = Date();
+
+  response.send(
+    `<p>phonebook has info for ${phonebook.length} people</p><p>${now}</p>`,
+  );
+});
+
 app.get("/api/persons", (request, response) => {
   response.json(phonebook);
 });
