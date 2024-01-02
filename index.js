@@ -74,10 +74,28 @@ app.post("/api/persons/", (request, response) => {
     id = Math.round(Math.random() * (1000 - 1) + 1);
   } while (phonebook.filter((p) => p.id === id).length);
 
-  const person = request.body;
-  person.id = id;
+  // create person object
+  const person = { id: id, ...request.body };
 
+  // if a value is missing return error 400 bad request
+  if (!(person.name && person.number)) {
+    return response.status(400).json({
+      error: "content missing",
+    });
+    // if name is already in phonebook return error 409 conflict
+  } else if (
+    phonebook.find(
+      (p) => p.name.trim().toLowerCase() === person.name.toLowerCase(),
+    )
+  ) {
+    return response.status(409).json({
+      error: "name must be unique",
+    });
+  }
+
+  // update phonebook
   phonebook = phonebook.concat(person);
+  // console.log(phonebook);
 
   response.status(200).end();
 });
