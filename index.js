@@ -1,9 +1,11 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 // create token that returns string of body data sent in post request
 morgan.token("data", (request, response) =>
@@ -76,6 +78,10 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
+app.get("/api/persons/", (request, response) => {
+  response.json(phonebook);
+});
+
 app.post("/api/persons/", (request, response) => {
   // generated id
   let id;
@@ -111,7 +117,7 @@ app.post("/api/persons/", (request, response) => {
   response.status(200).end();
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
