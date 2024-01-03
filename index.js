@@ -5,6 +5,7 @@ const cors = require("cors");
 const app = express();
 
 app.use(express.json());
+app.use(express.static("dist"));
 app.use(cors());
 
 // create token that returns string of body data sent in post request
