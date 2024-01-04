@@ -1,7 +1,9 @@
 # phonebook
 
 #### URL: https://phonebook-zgbd.onrender.com
+
 #### Description:
+
 ☎️ Phonebook project for University of Helsinki's MOOC 'Full Stack Open' part3
 
 It consists of a Full Stack introductory project to HTTP, HTML, CSS, JavaScript, React, NodeJS and Express! It lets the user
