@@ -6,9 +6,8 @@ const Person = require("./models/person");
 
 const app = express();
 
-app.use(express.json());
 app.use(express.static("dist"));
-app.use(cors());
+app.use(express.json());
 
 // create token that returns string of body data sent in post request
 morgan.token("data", (request, response) =>
@@ -19,16 +18,20 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :data"),
 );
 
+app.use(cors());
+
 // all endpoints update the phonebook with the server's one to ensure the user
 // gets the complete info when performing a create/read/update/delete operation
 let phonebook = [];
 
 const updatePhonebookAndExecute = (func) => {
-  Person.find({}).then((result) => {
-    console.log("phonebook updated successfully");
-    phonebook = result;
-    func();
-  });
+  Person
+    .find({})
+    .then((result) => {
+      console.log("phonebook updated successfully");
+      phonebook = result;
+      func();
+    })
 };
 
 app.get("/", (request, response) => {
@@ -61,7 +64,7 @@ app.get("/api/persons/:id", (request, response) => {
   });
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   updatePhonebookAndExecute(() => {
     // get sent id and convert it to number
     const id = request.params.id;
@@ -79,10 +82,7 @@ app.delete("/api/persons/:id", (request, response) => {
 
         response.status(204).end();
       })
-      .catch((error) => {
-        console.log(error.name);
-        response.status(500).end();
-      });
+      .catch((error) => next(error));
   });
 });
 
@@ -90,7 +90,7 @@ app.get("/api/persons/", (request, response) => {
   updatePhonebookAndExecute(() => response.json(phonebook));
 });
 
-app.post("/api/persons/", (request, response) => {
+app.post("/api/persons/", (request, response, next) => {
   updatePhonebookAndExecute(() => {
     // create person object
     const person = new Person({ ...request.body });
@@ -111,12 +111,35 @@ app.post("/api/persons/", (request, response) => {
       });
     }
 
-    person.save().then(() => {
-      console.log("person saved to phonebook successfully");
-      response.status(200).end();
-    });
+    person
+      .save()
+      .then(() => {
+        console.log("person saved to phonebook successfully");
+        response.status(200).end();
+      })
+      .catch((error) => next(error));
   });
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+// handler of requests with unknown endpoint
+app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+// handler of requests with result to errors
+app.use(errorHandler);
 
 // fetch db for phonebook entries and then start app
 updatePhonebookAndExecute(() => {
