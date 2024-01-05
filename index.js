@@ -25,13 +25,15 @@ app.use(cors());
 let phonebook = [];
 
 const updatePhonebookAndExecute = (func) => {
-  Person
-    .find({})
-    .then((result) => {
-      console.log("phonebook updated successfully");
-      phonebook = result;
+  Person.find({}).then((result) => {
+    phonebook = result;
+    console.log("phonebook updated successfully");
+    console.log("phonebook:");
+    console.log(phonebook);
+    if (func) {
       func();
-    })
+    }
+  });
 };
 
 app.get("/", (request, response) => {
@@ -118,6 +120,30 @@ app.post("/api/persons/", (request, response, next) => {
         response.status(200).end();
       })
       .catch((error) => next(error));
+  });
+});
+
+app.put("/api/persons/:id", (request, response, next) => {
+  updatePhonebookAndExecute(() => {
+    // const person = new Person({ ...request.body });
+    const id = request.params.id;
+
+    const person = { ...request.body };
+
+    if (phonebook.find((p) => p.id === id)) {
+      // update on db if exists
+      Person.findByIdAndUpdate(id, person, { new: true })
+        .then((updatedPerson) => {
+          console.log("updated person successfully", updatedPerson);
+          // update local copy of phonebook
+          updatePhonebookAndExecute();
+        })
+        .catch((error) => next(error));
+    } else {
+      response.status(404).end();
+    }
+
+    response.status(200).end();
   });
 });
 
