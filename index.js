@@ -125,25 +125,28 @@ app.post("/api/persons/", (request, response, next) => {
 
 app.put("/api/persons/:id", (request, response, next) => {
   updatePhonebookAndExecute(() => {
-    // const person = new Person({ ...request.body });
+    // extract id and person data from request
     const id = request.params.id;
-
     const person = { ...request.body };
 
+    // if person is in phonebook update it
     if (phonebook.find((p) => p.id === id)) {
+      // options for update
+      const opts = { runValidators: true, new: true };
+
       // update on db if exists
-      Person.findByIdAndUpdate(id, person, { new: true })
+      Person.findOneAndUpdate({ _id: id }, person, opts)
         .then((updatedPerson) => {
-          console.log("updated person successfully", updatedPerson);
           // update local copy of phonebook
           updatePhonebookAndExecute();
+          console.log("updated person successfully", updatedPerson);
+          response.status(200).end();
         })
         .catch((error) => next(error));
+      // else return error 404 not found
     } else {
       response.status(404).end();
     }
-
-    response.status(200).end();
   });
 });
 
