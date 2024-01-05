@@ -19,37 +19,51 @@ app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms :data"),
 );
 
+// all endpoints update the phonebook with the server's one to ensure the user
+// gets the complete info when performing a create/read/update/delete operation
 let phonebook = [];
+
+const updatePhonebookAndExecute = (func) => {
+  Person.find({}).then((result) => {
+    console.log("phonebook updated successfully");
+    phonebook = result;
+    func();
+  });
+};
 
 app.get("/", (request, response) => {
   response.send("<h1>Phonebook</h1>");
 });
 
 app.get("/info", (request, response) => {
-  const now = Date();
+  updatePhonebookAndExecute(() => {
+    const now = Date();
 
-  response.send(
-    `<p>phonebook has info for ${phonebook.length} people</p><p>${now}</p>`,
-  );
+    response.send(
+      `<p>phonebook has info for ${phonebook.length} people</p><p>${now}</p>`,
+    );
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  // get sent id and convert it to number
-  const id = request.params.id;
-  // find person with that id
-  const person = phonebook.find((p) => p.id === id);
+  updatePhonebookAndExecute(() => {
+    // get sent id and convert it to number
+    const id = request.params.id;
+    // find person with that id
+    const person = phonebook.find((p) => p.id === id);
 
-  // if person exists return the phonebook entry else send error 404 not found
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+    // if person exists return the phonebook entry else send error 404 not found
+    if (person) {
+      response.json(person);
+    } else {
+      response.status(404).end();
+    }
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
   // get sent id and convert it to number
-  const id = request.params.id;
+  const id = Number(request.params.id);
   // find person with that id
   const person = phonebook.find((p) => p.id === id);
 
@@ -61,48 +75,39 @@ app.delete("/api/persons/:id", (request, response) => {
 });
 
 app.get("/api/persons/", (request, response) => {
-  response.json(phonebook);
+  updatePhonebookAndExecute(() => response.json(phonebook));
 });
 
 app.post("/api/persons/", (request, response) => {
-  // generated id
-  let id;
+  updatePhonebookAndExecute(() => {
+    // create person object
+    const person = new Person({ ...request.body });
 
-  // prevent duplicates
-  do {
-    id = String(Math.round(Math.random() * (1000 - 1) + 1));
-  } while (phonebook.filter((p) => p.id === id).length);
+    // if a value is missing return error 400 bad request
+    if (!(person.name && person.number)) {
+      return response.status(400).json({
+        error: "content missing",
+      });
+      // if name is already in phonebook return error 409 conflict
+    } else if (
+      phonebook.find(
+        (p) => p.name.trim().toLowerCase() === person.name.toLowerCase(),
+      )
+    ) {
+      return response.status(409).json({
+        error: "name must be unique",
+      });
+    }
 
-  // create person object
-  const person = { id: id, ...request.body };
-
-  // if a value is missing return error 400 bad request
-  if (!(person.name && person.number)) {
-    return response.status(400).json({
-      error: "content missing",
+    person.save().then(() => {
+      console.log("person saved to phonebook successfully");
+      response.status(200).end();
     });
-    // if name is already in phonebook return error 409 conflict
-  } else if (
-    phonebook.find(
-      (p) => p.name.trim().toLowerCase() === person.name.toLowerCase(),
-    )
-  ) {
-    return response.status(409).json({
-      error: "name must be unique",
-    });
-  }
-
-  // update phonebook
-  phonebook = phonebook.concat(person);
-  // console.log(phonebook);
-
-  response.status(200).end();
+  });
 });
 
 // fetch db for phonebook entries and then start app
-Person.find({}).then((result) => {
-  phonebook = result;
-
+updatePhonebookAndExecute(() => {
   const PORT = process.env.PORT;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
