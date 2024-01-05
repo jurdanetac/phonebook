@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon --inspect index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
     "build:ui": "rm -rf dist && cd ../part2/phonebook && npm run build && mv dist ../../part3/",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
@@ -28,6 +29,9 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
     "nodemon": "^3.0.2"
   }
 }
