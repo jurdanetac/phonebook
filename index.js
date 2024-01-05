@@ -62,16 +62,28 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  // get sent id and convert it to number
-  const id = Number(request.params.id);
-  // find person with that id
-  const person = phonebook.find((p) => p.id === id);
+  updatePhonebookAndExecute(() => {
+    // get sent id and convert it to number
+    const id = request.params.id;
 
-  if (person) {
-    phonebook = phonebook.filter((p) => p.id !== id);
-  }
+    // delete them in the db
+    Person.findByIdAndDelete(id)
+      .then(() => {
+        // find person with that id in local phonebook
+        const person = phonebook.find((p) => p.id === id);
 
-  response.status(204).end();
+        if (person) {
+          // delete them in local copy of phonebook
+          phonebook = phonebook.filter((p) => p.id !== id);
+        }
+
+        response.status(204).end();
+      })
+      .catch((error) => {
+        console.log(error.name);
+        response.status(500).end();
+      });
+  });
 });
 
 app.get("/api/persons/", (request, response) => {
